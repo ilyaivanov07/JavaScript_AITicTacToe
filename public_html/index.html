@@ -1,14 +1,185 @@
 <!DOCTYPE html>
 
 <html>
+    <script src="js/libs/jquery/jquery.js" type="text/javascript"></script>
+    
     <head>
         <title>TTT</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            td {
+                width: 30px;
+                height: 30px;
+                border: gray solid 1px;
+                margin: 0px;
+                padding: 0px;
+            }
+            table { border-collapse: collapse; }            
+            
+        </style>
+        
+        <script>
+            
+            $(function() { 
+                var x = new Image();
+                x.src = 'img/X.png';
+                var o = new Image();
+                o.src = 'img/O.png';
+
+                $('td').on('click', onCellClick);
+            });
+            
+            var imageO = "url('img/O.png')";
+            var imageX = "url('img/X.png')";
+            var imgO = "O.png";
+            var imgX = "X.png";
+            
+            var currentImage = imageX;
+            
+            function onCellClick() {
+                if ($(this).css('background-image') === 'none') {
+                    $(this).css('background-image', currentImage);
+                    switchImage(currentImage);
+                    checkResult();
+                }
+                //alert(this.id);
+            }
+            
+            
+            function switchImage(current) {
+                if (current === imageX) {
+                    currentImage = imageO;
+                }
+                else {
+                    currentImage = imageX;
+                }
+            }
+            
+            
+            function checkResult() {
+                var xCounter = 0;
+                var oCounter = 0;
+                
+                // check each column
+                for (var x = 0; x < 3; x++) {
+                    oCounter = 0;
+                    xCounter = 0;
+                    for (var y = 0; y < 3; y++) {
+                        var id = '#';
+                        id += + x.toString() + y.toString();
+                        var bkImage = $(id).css('background-image');
+                        if (bkImage.indexOf(imgO) > -1) {
+                            oCounter++;
+                        }
+                        else if (bkImage.indexOf(imgX) > -1){
+                            xCounter++;
+                        }
+                    }
+                    if (xCounter === 3) {
+                        alert('X won!');
+                        return;
+                    }
+                    if (oCounter === 3) {
+                        alert('O won!');
+                        return;
+                    }
+                }
+                
+                // check each row
+                for (var y = 0; y < 3; y++) {
+                    oCounter = 0;
+                    xCounter = 0;
+                    for (var x = 0; x < 3; x++) {
+                        var id = '#';
+                        id += + x.toString() + y.toString();
+                        var bkImage = $(id).css('background-image');
+                        if (bkImage.indexOf(imgO) > -1) {
+                            oCounter++;
+                        }
+                        else if (bkImage.indexOf(imgX) > -1){
+                            xCounter++;
+                        }
+                    }
+                    if (xCounter === 3) {
+                        alert('X won!');
+                        return;
+                    }
+                    if (oCounter === 3) {
+                        alert('O won!');
+                        return;
+                    }
+                }
+                
+                //check diagonals
+                oCounter = 0;
+                xCounter = 0;
+                for (var y = 0, x = 0; y < 3; y++, x++) {
+                    var id = '#';
+                    id += + x.toString() + y.toString();
+                    var bkImage = $(id).css('background-image');
+                    if (bkImage.indexOf(imgO) > -1) {
+                        oCounter++;
+                    }
+                    else if (bkImage.indexOf(imgX) > -1){
+                        xCounter++;
+                    }
+                }
+                if (xCounter === 3) {
+                    alert('X won!');
+                    return;
+                }
+                if (oCounter === 3) {
+                    alert('O won!');
+                    return;
+                }
+                
+                oCounter = 0;
+                xCounter = 0;
+                for (var y = 2, x = 0; x < 3; y--, x++) {
+                    var id = '#';
+                    id += + x.toString() + y.toString();
+                    var bkImage = $(id).css('background-image');
+                    if (bkImage.indexOf(imgO) > -1) {
+                        oCounter++;
+                    }
+                    else if (bkImage.indexOf(imgX) > -1){
+                        xCounter++;
+                    }
+                }
+                if (xCounter === 3) {
+                    alert('X won!');
+                    return;
+                }
+                if (oCounter === 3) {
+                    alert('O won!');
+                    return;
+                }
+                
+                
+            }
+            
+            
+        </script>
+        
+        
     </head>
     <body>
-
-
+        <table>
+            <tr>
+                <td id='02'></td>
+                <td id='12'></td>
+                <td id='22'></td>
+            </tr>
+            <tr>
+                <td id='01'></td>
+                <td id='11'></td>
+                <td id='21'></td>
+            </tr>
+            <tr>
+                <td id='00'></td>
+                <td id='10'></td>
+                <td id='20'></td>
+            </tr>
+        </table>
 
     </body>
 </html>
