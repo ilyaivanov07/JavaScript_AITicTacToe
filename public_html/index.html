@@ -35,16 +35,7 @@
             
             var currentImage = imageX;
             
-            function onCellClick() {
-                if ($(this).css('background-image') === 'none') {
-                    $(this).css('background-image', currentImage);
-                    switchImage(currentImage);
-                    checkResult();
-                }
-                //alert(this.id);
-            }
-            
-            
+           
             function switchImage(current) {
                 if (current === imageX) {
                     currentImage = imageO;
@@ -75,12 +66,10 @@
                         }
                     }
                     if (xCounter === 3) {
-                        alert('X won!');
-                        return;
+                        return 'x';
                     }
                     if (oCounter === 3) {
-                        alert('O won!');
-                        return;
+                        return 'o';
                     }
                 }
                 
@@ -100,12 +89,10 @@
                         }
                     }
                     if (xCounter === 3) {
-                        alert('X won!');
-                        return;
+                        return 'x';
                     }
                     if (oCounter === 3) {
-                        alert('O won!');
-                        return;
+                        return 'o';
                     }
                 }
                 
@@ -124,12 +111,10 @@
                     }
                 }
                 if (xCounter === 3) {
-                    alert('X won!');
-                    return;
+                    return 'x';
                 }
                 if (oCounter === 3) {
-                    alert('O won!');
-                    return;
+                    return 'o';
                 }
                 
                 oCounter = 0;
@@ -146,18 +131,236 @@
                     }
                 }
                 if (xCounter === 3) {
-                    alert('X won!');
-                    return;
+                    return 'x';
                 }
                 if (oCounter === 3) {
-                    alert('O won!');
-                    return;
+                    return 'o';
                 }
                 
-                
+                return null;
             }
             
             
+            function checkWinner(grid) {
+                var xCounter = 0;
+                var oCounter = 0;
+                
+                // check each column
+                for (var x = 0; x < 3; x++) {
+                    oCounter = 0;
+                    xCounter = 0;
+                    for (var y = 0; y < 3; y++) {
+                        if (grid[x][y] === 2) {
+                            oCounter++;
+                        }
+                        else if (grid[x][y] === 1){
+                            xCounter++;
+                        }
+                    }
+                    if (xCounter === 3) {
+                        return 'x';
+                    }
+                    if (oCounter === 3) {
+                        return 'o';
+                    }
+                }
+                
+                // check each row
+                for (var y = 0; y < 3; y++) {
+                    oCounter = 0;
+                    xCounter = 0;
+                    for (var x = 0; x < 3; x++) {
+                        if (grid[x][y] === 2) {
+                            oCounter++;
+                        }
+                        else if (grid[x][y] === 1){
+                            xCounter++;
+                        }
+                    }
+                    if (xCounter === 3) {
+                        return 'x';
+                    }
+                    if (oCounter === 3) {
+                        return 'o';
+                    }
+                }
+                
+                //check diagonals
+                oCounter = 0;
+                xCounter = 0;
+                for (var y = 0, x = 0; y < 3; y++, x++) {
+                        if (grid[x][y] === 2) {
+                            oCounter++;
+                        }
+                        else if (grid[x][y] === 1){
+                            xCounter++;
+                        }
+                }
+                if (xCounter === 3) {
+                    return 'x';
+                }
+                if (oCounter === 3) {
+                    return 'o';
+                }
+                
+                oCounter = 0;
+                xCounter = 0;
+                for (var y = 2, x = 0; x < 3; y--, x++) {
+                        if (grid[x][y] === 2) {
+                            oCounter++;
+                        }
+                        else if (grid[x][y] === 1){
+                            xCounter++;
+                        }
+                }
+                if (xCounter === 3) {
+                    return 'x';
+                }
+                if (oCounter === 3) {
+                    return 'o';
+                }
+                
+                return null;
+            }
+            
+            
+            // done as Immediately Invoked Function Expression (IIFE) to hide private members 
+            (function () {
+
+                // create public object and expose a method that returns an instance 
+                window.$TTTGrid = { create: function () { return new TTTGrid(); } }; // anonymous object 
+
+                // constructor
+                function TTTGrid() {
+                    this.grid = []; // store coordinates
+                    // grid[y][x]
+                    // 1 - x, 2 - o, 0 - none
+                    // initialize grid to all zeroes
+                    for (var i = 0; i < 3; i++) {
+                        this.grid[i] = [0,0,0];
+                    }
+
+                    this.displayGrid = displayGrid;
+                    this.markState = markState;
+                }
+
+                function markState(x, y, state) {
+                    this.grid[y][x] = state;
+                }
+
+                function displayGrid() {
+                    for (var y = 0; y < 3; y++) {
+                        document.write('<br>');
+                        for (var x = 0; x < 3; x++) {
+                            document.write(this.grid[y][x] + ' ');
+                        }
+                    }
+                }
+
+            }());
+
+            var tttGrid = window.$TTTGrid.create();
+            //tttGrid.displayGrid();
+            //alert(Math.min.apply(Math, [3, 1, 5]));
+
+            function onCellClick() {
+                if ($(this).css('background-image') === 'none') {
+                    $(this).css('background-image', currentImage);
+
+                    var state = 1;
+                    if (currentImage === imageX) {
+                        state = 1;
+                    }
+                    else {
+                        state = 2;
+                    }
+                    
+                    tttGrid.markState(this.id.substring(0,1), this.id.substring(1,2), state);                     
+                    
+                    var result = checkResult();
+                    if (result === 'x') alert('X won');
+                    else if (result === 'o') alert('O won');
+            
+                    switchImage(currentImage);
+                   
+                }
+                //alert(this.id);
+            }
+
+    
+    
+            // node { value: <1|-1|0>, x: <x>, y: <y>, grid: TTTGrid }
+            function minimax(node, maximizing) {
+                // node { value: <1|-1|0>, x: <x>, y: <y> }
+                // if terminal state (win or draw), return node
+                // first check if current type (x or o) won
+                var result = checkWinner(node.grid);
+                if ( (maximizing === 1 && result === 'x') || (maximizing === 0 && result === 'o') ) {
+                    return node;
+                }
+
+                var successors = getSuccessors(node);
+                // then check if the grid is filled
+                if (successors.length === 0) {
+                    // grid filled and no winner if got to this point
+                    node.value = 0;
+                    return node;
+                }
+                
+                var bestValue = 0;
+                var tempNode = node;
+ 
+                if (maximizing === 1) {
+                    bestValue = -2;
+                    for (var i = 0; i < successors.length; i++) {
+                        var successorNode = successors[i];
+                        // copy grid from a successor
+                        var grid = jQuery.extend(true, {}, successorNode.grid);
+                        grid[node.y][node.x] = 1; // 1 for x
+                        // update grid in a successor
+                        successorNode.grid = grid;
+                        var n = minimax(successorNode, 0);
+                        if (n.value > bestValue) {
+                            bestValue = n.value;
+                            tempNode = n;
+                        }
+                    }
+                }
+                else {
+                    bestValue = 2;
+                    for (var i = 0; i < successors.length; i++) {
+                        var successorNode = successors[i];
+                        // copy grid from a successor
+                        var grid = jQuery.extend(true, {}, successorNode.grid);
+                        grid[node.y][node.x] = 2; // 2 for o
+                        // update grid in a successor
+                        successorNode.grid = grid;
+                        var n = minimax(successorNode, 1);
+                        if (n.value < bestValue) {
+                            bestValue = n.value;
+                            tempNode = n;
+                        }
+                    }
+                }
+                
+                return tempNode;
+            }
+            
+            // returns an array of possible successors
+            function getSuccessors(node) {
+                var successors = [];
+                
+                for (var y = 0; y < 3; y++) {
+                    for (var x = 0; x < 3; x++) {
+                        if (node.grid[y][x] !== 0) { // if space is not taken by either x or o
+                            successors.push({value: 0, x: x, y: y, grid: null});
+                        }
+                    }
+                }
+                
+                return successors;
+            }
+    
         </script>
         
         
