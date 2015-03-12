@@ -246,13 +246,16 @@
 
                 function markState(x, y, state) {
                     this.grid[y][x] = state;
+                    //this.displayGrid();
                 }
 
-                function displayGrid() {
+                function displayGrid(grid) {
+                    var g = (grid === undefined) ? this.grid : grid;
+                   
                     for (var y = 0; y < 3; y++) {
                         document.write('<br>');
                         for (var x = 0; x < 3; x++) {
-                            document.write(this.grid[y][x] + ' ');
+                            document.write(g[y][x] + ' ');
                         }
                     }
                 }
@@ -263,30 +266,43 @@
             //tttGrid.displayGrid();
             //alert(Math.min.apply(Math, [3, 1, 5]));
 
+            function move(grid, x, y) {
+                
+            }
+
             function onCellClick() {
                 if ($(this).css('background-image') === 'none') {
                     $(this).css('background-image', currentImage);
 
                     var state = 1;
                     if (currentImage === imageX) {
-                        state = 1; // if current is X, run minimax for O
+                        state = 1;
                     }
                     else {
-                        state = 2; // if current is O, run minimax for X
+                        state = 2; 
                     }
-                    
-                    tttGrid.markState(this.id.substring(0,1), this.id.substring(1,2), state);                     
-                    
-                    state = (state === 2) ? 1: 2;
-                    minimax({value: 0, x: parseInt(this.id.substring(0,1)), y: parseInt(this.id.substring(1,2)), grid: tttGrid.grid}, state);
-                    
-                    
+                    tttGrid.markState(this.id.substring(1,2), this.id.substring(0,1), state);                     
                     var result = checkResult();
-                    if (result === 'x') alert('X won');
-                    else if (result === 'o') alert('O won');
-            
+                    if (result === 'x') { alert('X won'); return; }
+                    else if (result === 'o') { alert('O won'); return; }
                     switchImage(currentImage);
-                   
+
+                    // computers turn
+                    state = (state === 2) ? 1: 2; // flip the state, because the computer runs a different state
+                    var recommendedMove  = minimax({value: 0, x: parseInt(this.id.substring(1,2)), y: parseInt(this.id.substring(0,1)), grid: tttGrid.grid}, state);
+                    //alert('Recommended move: x = ' + recommendedMove.x + ' y = ' + recommendedMove.y);
+                    
+                    if ($('#' + recommendedMove.y + recommendedMove.x).css('background-image') === 'none') {
+                        $('#' + recommendedMove.y + recommendedMove.x).css('background-image', currentImage); 
+                        tttGrid.markState(recommendedMove.x, recommendedMove.y, state);                     
+                        var result = checkResult();
+                        if (result === 'x') { alert('X won'); return; }
+                        else if (result === 'o') { alert('O won'); return; }
+                        switchImage(currentImage);
+                    }
+                    else {
+                        alert('Violation: cell(x,y) (' + recommendedMove.x + ',' + recommendedMove.y + ') is occupied');
+                    }
                 }
                 //alert(this.id);
             }
@@ -298,9 +314,9 @@
                 
                 counter++;
                 // just in case
-                if (counter >= 10000) {
+                if (counter >= 100000) {
                     // it gets here, so, its bad
-                    alert('returning null');
+                    alert('counter >= 100000');
                     return null;
                 }
                 
@@ -332,7 +348,15 @@
                         var successorNode = successors[i];
                         // copy grid from a successor
                         var grid = jQuery.extend(true, {}, successorNode.grid);
-                        grid[node.y][node.x] = 1; // 1 for x
+
+                        
+                        if (node.x === successorNode.x && node.y === successorNode.y) {
+                            alert('Violation!!!: x:' + node.x + ' y:' + node.y);
+                            tttGrid.displayGrid(node.grid);
+                            return;
+                        }
+                        
+                        grid[successorNode.y][successorNode.x] = 1; // 1 for x
                         // update grid in a successor
                         successorNode.grid = grid;
                         var n = minimax(successorNode, 0);
@@ -348,7 +372,7 @@
                         var successorNode = successors[i];
                         // copy grid from a successor
                         var grid = jQuery.extend(true, {}, successorNode.grid);
-                        grid[node.y][node.x] = 2; // 2 for o
+                        grid[successorNode.y][successorNode.x] = 2; // 2 for o
                         // update grid in a successor
                         successorNode.grid = grid;
                         var n = minimax(successorNode, 1);
@@ -384,19 +408,19 @@
     <body>
         <table>
             <tr>
-                <td id='02'></td>
-                <td id='12'></td>
-                <td id='22'></td>
-            </tr>
-            <tr>
-                <td id='01'></td>
-                <td id='11'></td>
-                <td id='21'></td>
-            </tr>
-            <tr>
                 <td id='00'></td>
+                <td id='01'></td>
+                <td id='02'></td>
+            </tr>
+            <tr>
                 <td id='10'></td>
+                <td id='11'></td>
+                <td id='12'></td>
+            </tr>
+            <tr>
                 <td id='20'></td>
+                <td id='21'></td>
+                <td id='22'></td>
             </tr>
         </table>
 
