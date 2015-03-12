@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <html>
-    <script src="js/libs/jquery/jquery.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     
     <head>
         <title>TTT</title>
@@ -12,6 +12,8 @@
                 border: gray solid 1px;
                 margin: 0px;
                 padding: 0px;
+                text-align: center;
+                font-size: 1.5em;
             }
             table { border-collapse: collapse; }            
             
@@ -20,127 +22,18 @@
         <script>
             
             $(function() { 
-                var x = new Image();
-                x.src = 'img/X.png';
-                var o = new Image();
-                o.src = 'img/O.png';
-
                 $('td').on('click', onCellClick);
             });
             
-            var imageO = "url('img/O.png')";
-            var imageX = "url('img/X.png')";
-            var imgO = "O.png";
-            var imgX = "X.png";
-            
-            var currentImage = imageX;
-            
+            var signX = "X";
+            var signO = "O";
+            var currentPlayer = signX;
            
-            function switchImage(current) {
-                if (current === imageX) {
-                    currentImage = imageO;
-                }
-                else {
-                    currentImage = imageX;
-                }
+            function switchPlayer() {
+                currentPlayer = (currentPlayer === signX) ? signO : signX;
             }
-            
-            
-            function checkResult() {
-                var xCounter = 0;
-                var oCounter = 0;
-                
-                // check each column
-                for (var x = 0; x < 3; x++) {
-                    oCounter = 0;
-                    xCounter = 0;
-                    for (var y = 0; y < 3; y++) {
-                        var id = '#';
-                        id += + x.toString() + y.toString();
-                        var bkImage = $(id).css('background-image');
-                        if (bkImage.indexOf(imgO) > -1) {
-                            oCounter++;
-                        }
-                        else if (bkImage.indexOf(imgX) > -1){
-                            xCounter++;
-                        }
-                    }
-                    if (xCounter === 3) {
-                        return 'x';
-                    }
-                    if (oCounter === 3) {
-                        return 'o';
-                    }
-                }
-                
-                // check each row
-                for (var y = 0; y < 3; y++) {
-                    oCounter = 0;
-                    xCounter = 0;
-                    for (var x = 0; x < 3; x++) {
-                        var id = '#';
-                        id += + x.toString() + y.toString();
-                        var bkImage = $(id).css('background-image');
-                        if (bkImage.indexOf(imgO) > -1) {
-                            oCounter++;
-                        }
-                        else if (bkImage.indexOf(imgX) > -1){
-                            xCounter++;
-                        }
-                    }
-                    if (xCounter === 3) {
-                        return 'x';
-                    }
-                    if (oCounter === 3) {
-                        return 'o';
-                    }
-                }
-                
-                //check diagonals
-                oCounter = 0;
-                xCounter = 0;
-                for (var y = 0, x = 0; y < 3; y++, x++) {
-                    var id = '#';
-                    id += + x.toString() + y.toString();
-                    var bkImage = $(id).css('background-image');
-                    if (bkImage.indexOf(imgO) > -1) {
-                        oCounter++;
-                    }
-                    else if (bkImage.indexOf(imgX) > -1){
-                        xCounter++;
-                    }
-                }
-                if (xCounter === 3) {
-                    return 'x';
-                }
-                if (oCounter === 3) {
-                    return 'o';
-                }
-                
-                oCounter = 0;
-                xCounter = 0;
-                for (var y = 2, x = 0; x < 3; y--, x++) {
-                    var id = '#';
-                    id += + x.toString() + y.toString();
-                    var bkImage = $(id).css('background-image');
-                    if (bkImage.indexOf(imgO) > -1) {
-                        oCounter++;
-                    }
-                    else if (bkImage.indexOf(imgX) > -1){
-                        xCounter++;
-                    }
-                }
-                if (xCounter === 3) {
-                    return 'x';
-                }
-                if (oCounter === 3) {
-                    return 'o';
-                }
-                
-                return null;
-            }
-            
-            
+          
+            // returns x if x wins, o if o wins
             function checkWinner(grid) {
                 var xCounter = 0;
                 var oCounter = 0;
@@ -242,11 +135,25 @@
 
                     this.displayGrid = displayGrid;
                     this.markState = markState;
+                    this.countZeroesInGrid = countZerosInGrid;
                 }
 
                 function markState(x, y, state) {
                     this.grid[y][x] = state;
                     //this.displayGrid();
+                }
+
+                
+                function countZerosInGrid() {
+                    var counter = 0;
+                    
+                    for (var y = 0; y < 3; y++) {
+                        for (var x = 0; x < 3; x++) {
+                            if (this.grid[y][x] === 0) counter++;
+                        }
+                    }
+                    
+                    return counter;
                 }
 
                 function displayGrid(grid) {
@@ -263,42 +170,57 @@
             }());
 
             var tttGrid = window.$TTTGrid.create();
+            var gameOver = 0;
+            var nodesExpanded = 0;
             //tttGrid.displayGrid();
             //alert(Math.min.apply(Math, [3, 1, 5]));
 
-            function move(grid, x, y) {
-                
+            function checkResult() {
+                    var result = checkWinner(tttGrid.grid);
+                    if (result != null) {
+                        gameOver = 1;
+                        alert(result + ' won!');
+                        return true;
+                    }
+                    if (tttGrid.countZeroesInGrid() === 0) {
+                        gameOver = 1;
+                        alert('Draw!');
+                        return true;
+                    }
+                return false;    
             }
 
             function onCellClick() {
-                if ($(this).css('background-image') === 'none') {
-                    $(this).css('background-image', currentImage);
+                
+                if (gameOver === 1) return;
+                //alert($(this).text());
+                
+                if ($(this).text() === '') {
+                    $(this).html(currentPlayer);
 
-                    var state = 1;
-                    if (currentImage === imageX) {
+                    var state = -1;
+                    if (currentPlayer === signX) {
                         state = 1;
                     }
                     else {
                         state = 2; 
                     }
                     tttGrid.markState(this.id.substring(1,2), this.id.substring(0,1), state);                     
-                    var result = checkResult();
-                    if (result === 'x') { alert('X won'); return; }
-                    else if (result === 'o') { alert('O won'); return; }
-                    switchImage(currentImage);
+                    if (checkResult()) return;
+                    switchPlayer();
 
-                    // computers turn
+                    // computor's turn
                     state = (state === 2) ? 1: 2; // flip the state, because the computer runs a different state
+                    nodesExpanded = 0;
                     var recommendedMove  = minimax({value: 0, x: parseInt(this.id.substring(1,2)), y: parseInt(this.id.substring(0,1)), grid: tttGrid.grid}, state);
-                    //alert('Recommended move: x = ' + recommendedMove.x + ' y = ' + recommendedMove.y);
+                    $('#message').html('Nodes expanded: ' + nodesExpanded);
                     
-                    if ($('#' + recommendedMove.y + recommendedMove.x).css('background-image') === 'none') {
-                        $('#' + recommendedMove.y + recommendedMove.x).css('background-image', currentImage); 
+                    
+                    if ($('#' + recommendedMove.y + recommendedMove.x).text() === '') {
+                        $('#' + recommendedMove.y + recommendedMove.x).html(currentPlayer);
                         tttGrid.markState(recommendedMove.x, recommendedMove.y, state);                     
-                        var result = checkResult();
-                        if (result === 'x') { alert('X won'); return; }
-                        else if (result === 'o') { alert('O won'); return; }
-                        switchImage(currentImage);
+                        if (checkResult()) return;
+                        switchPlayer();
                     }
                     else {
                         alert('Violation: cell(x,y) (' + recommendedMove.x + ',' + recommendedMove.y + ') is occupied');
@@ -307,16 +229,17 @@
                 //alert(this.id);
             }
 
-            var counter = 0;
     
             // node { value: <1|-1|0>, x: <x>, y: <y>, grid: TTTGrid }
             function minimax(node, maximizing) {
                 
-                counter++;
+                if (maximizing != 2 && maximizing != 1) { alert('maximizing is wrong!'); return null; }
+                
+                nodesExpanded++;
                 // just in case
-                if (counter >= 100000) {
+                if (nodesExpanded >= 100000) {
                     // it gets here, so, its bad
-                    alert('counter >= 100000');
+                    alert('nodesExpanded >= 100000');
                     return null;
                 }
                 
@@ -325,8 +248,14 @@
                 // first check if current type (x or o) won
                 var result = checkWinner(node.grid);
                 
-                // this means someone won
+                // this means someone won (virtually during the mapping state)
                 if ( result !== null) {
+                    if (result === 'x') { // if x won
+                        node.value = (maximizing === 2) ? 1 : -1;
+                    } 
+                    else if (result === 'o') { // if o won
+                        node.value = (maximizing === 2) ? -1 : 1;
+                    }
                     return node;
                 }
 
@@ -348,7 +277,29 @@
                         var successorNode = successors[i];
                         // copy grid from a successor
                         var grid = jQuery.extend(true, {}, successorNode.grid);
-
+                        
+                        if (node.x === successorNode.x && node.y === successorNode.y) {
+                            alert('Violation!!!: x:' + node.x + ' y:' + node.y);
+                            tttGrid.displayGrid(node.grid);
+                            return;
+                        }
+                        
+                        grid[successorNode.y][successorNode.x] = 2; // 2 for o
+                        // update grid in a successor
+                        successorNode.grid = grid;
+                        var n = minimax(successorNode, 2);
+                        if (n.value > bestValue) {
+                            bestValue = n.value;
+                            tempNode = n;
+                        }
+                    }
+                }
+                else { // if maximizing === 2 
+                    bestValue = 2;
+                    for (var i = 0; i < successors.length; i++) {
+                        var successorNode = successors[i];
+                        // copy grid from a successor
+                        var grid = jQuery.extend(true, {}, successorNode.grid);
                         
                         if (node.x === successorNode.x && node.y === successorNode.y) {
                             alert('Violation!!!: x:' + node.x + ' y:' + node.y);
@@ -357,22 +308,6 @@
                         }
                         
                         grid[successorNode.y][successorNode.x] = 1; // 1 for x
-                        // update grid in a successor
-                        successorNode.grid = grid;
-                        var n = minimax(successorNode, 0);
-                        if (n.value > bestValue) {
-                            bestValue = n.value;
-                            tempNode = n;
-                        }
-                    }
-                }
-                else {
-                    bestValue = 2;
-                    for (var i = 0; i < successors.length; i++) {
-                        var successorNode = successors[i];
-                        // copy grid from a successor
-                        var grid = jQuery.extend(true, {}, successorNode.grid);
-                        grid[successorNode.y][successorNode.x] = 2; // 2 for o
                         // update grid in a successor
                         successorNode.grid = grid;
                         var n = minimax(successorNode, 1);
@@ -406,23 +341,26 @@
         
     </head>
     <body>
-        <table>
-            <tr>
-                <td id='00'></td>
-                <td id='01'></td>
-                <td id='02'></td>
-            </tr>
-            <tr>
-                <td id='10'></td>
-                <td id='11'></td>
-                <td id='12'></td>
-            </tr>
-            <tr>
-                <td id='20'></td>
-                <td id='21'></td>
-                <td id='22'></td>
-            </tr>
-        </table>
-
+        <div>
+            
+            <div id="message"></div>
+            <table>
+                <tr>
+                    <td id='00'></td>
+                    <td id='01'></td>
+                    <td id='02'></td>
+                </tr>
+                <tr>
+                    <td id='10'></td>
+                    <td id='11'></td>
+                    <td id='12'></td>
+                </tr>
+                <tr>
+                    <td id='20'></td>
+                    <td id='21'></td>
+                    <td id='22'></td>
+                </tr>
+            </table>
+        </div>
     </body>
 </html>
