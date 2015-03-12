@@ -269,13 +269,17 @@
 
                     var state = 1;
                     if (currentImage === imageX) {
-                        state = 1;
+                        state = 1; // if current is X, run minimax for O
                     }
                     else {
-                        state = 2;
+                        state = 2; // if current is O, run minimax for X
                     }
                     
                     tttGrid.markState(this.id.substring(0,1), this.id.substring(1,2), state);                     
+                    
+                    state = (state === 2) ? 1: 2;
+                    minimax({value: 0, x: parseInt(this.id.substring(0,1)), y: parseInt(this.id.substring(1,2)), grid: tttGrid.grid}, state);
+                    
                     
                     var result = checkResult();
                     if (result === 'x') alert('X won');
@@ -287,19 +291,31 @@
                 //alert(this.id);
             }
 
-    
+            var counter = 0;
     
             // node { value: <1|-1|0>, x: <x>, y: <y>, grid: TTTGrid }
             function minimax(node, maximizing) {
+                
+                counter++;
+                // just in case
+                if (counter >= 10000) {
+                    // it gets here, so, its bad
+                    alert('returning null');
+                    return null;
+                }
+                
                 // node { value: <1|-1|0>, x: <x>, y: <y> }
                 // if terminal state (win or draw), return node
                 // first check if current type (x or o) won
                 var result = checkWinner(node.grid);
-                if ( (maximizing === 1 && result === 'x') || (maximizing === 0 && result === 'o') ) {
+                
+                // this means someone won
+                if ( result !== null) {
                     return node;
                 }
 
                 var successors = getSuccessors(node);
+                //document.write('<br>' + successors.length);
                 // then check if the grid is filled
                 if (successors.length === 0) {
                     // grid filled and no winner if got to this point
@@ -352,8 +368,8 @@
                 
                 for (var y = 0; y < 3; y++) {
                     for (var x = 0; x < 3; x++) {
-                        if (node.grid[y][x] !== 0) { // if space is not taken by either x or o
-                            successors.push({value: 0, x: x, y: y, grid: null});
+                        if (node.grid[y][x] === 0) { // if space is not taken by either x or o
+                            successors.push({value: 0, x: x, y: y, grid: node.grid});
                         }
                     }
                 }
