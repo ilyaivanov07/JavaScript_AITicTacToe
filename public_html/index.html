@@ -169,22 +169,40 @@
 
             }());
 
+
+
             var tttGrid = window.$TTTGrid.create();
             var gameOver = 0;
             var nodesExpanded = 0;
             //tttGrid.displayGrid();
             //alert(Math.min.apply(Math, [3, 1, 5]));
 
+
+            function reset() {
+                tttGrid = window.$TTTGrid.create();
+                gameOver = 0;
+                nodesExpanded = 0;
+                for (var y = 0; y < 3; y++) {
+                    for (var x = 0; x < 3; x++) {
+                        $('#' + y + x).html('');                        
+                    }
+                }
+                $('#message').html('New Game');
+                $('#resultMessage').html('');
+                currentPlayer = playerX; // human makes the first move as X, computer plays as O
+            }
+
+
             function checkResult() {
                     var result = checkWinner(tttGrid.grid);
                     if (result != null) {
                         gameOver = 1;
-                        alert(result + ' won!');
+                        $('#resultMessage').html(result + ' won!');
                         return true;
                     }
                     if (tttGrid.countZeroesInGrid() === 0) {
                         gameOver = 1;
-                        alert('Draw!');
+                        $('#resultMessage').html('Draw');
                         return true;
                     }
                 return false;    
@@ -204,8 +222,8 @@
                     
                     // computOr's turn. Computer plays as O
                     nodesExpanded = 0;
-                    var recommendedMove  = minimax({value: 0, x: parseInt(this.id.substring(1,2)), y: parseInt(this.id.substring(0,1)), 
-                        grid: tttGrid.grid}, true);
+                    var recommendedMove  = minimax({player: currentPlayer, value: 0, x: parseInt(this.id.substring(1,2)), y: parseInt(this.id.substring(0,1)), 
+                        grid: tttGrid.grid}, false);
                     $('#message').html('Nodes expanded: ' + nodesExpanded);
                     
                     if ($('#' + recommendedMove.y + recommendedMove.x).text() === '') {
@@ -238,6 +256,7 @@
                 // if someone won (virtually during the mapping state)
                 if ( result !== null) {
                     
+                    
                     if (result === playerX) { // (human won, bad for the computer, hence -1)
                         node.value = -1;
                     } 
@@ -246,6 +265,12 @@
                         //tttGrid.displayGrid(node.grid);
                     }
                     
+                    if (node.x === 2 && node.y === 1) {
+                        if ($('#showMessage').is(':checked')) {
+                            alert('value: ' + node.value);
+                            $("#showMessage").prop( "checked", false );
+                        }
+                    }
                     
                     /*
                     if (result === playerX) { // x won (human won)
@@ -271,24 +296,18 @@
                 var bestValue = 0;
                 var bestNode = node;
  
+ 
                 if (maximizing) { // computer is maximizing
                     bestValue = -2;
                     
-                    // go through each successor
+                    // go through each successor, each successor should be the opposite of parent
                     for (var i = 0; i < successors.length; i++) {
                         var successorNode = successors[i];
-                        // copy grid from a successor
-                        var grid = jQuery.extend(true, {}, successorNode.grid);
-                        
                         if (node.x === successorNode.x && node.y === successorNode.y) {
                             alert('Violation!!!: x:' + node.x + ' y:' + node.y);
                             tttGrid.displayGrid(node.grid);
                             return;
                         }
-                        
-                        grid[successorNode.y][successorNode.x] = playerX; 
-                        // update grid in a successor
-                        successorNode.grid = grid;
                         var n = minimax(successorNode, false);
                         if (n.value > bestValue) {
                             bestValue = n.value;
@@ -299,22 +318,14 @@
                 else { // if minimizing (human player is minimizing)
                     bestValue = 2;
                     
-                    // go through each successor
+                    // go through each successor, each successor should be maximizing
                     for (var i = 0; i < successors.length; i++) {
                         var successorNode = successors[i];
-                        // copy grid from a successor
-                        var grid = jQuery.extend(true, {}, successorNode.grid);
-                        
                         if (node.x === successorNode.x && node.y === successorNode.y) {
                             alert('Violation!!!: x:' + node.x + ' y:' + node.y);
                             tttGrid.displayGrid(node.grid);
                             return;
                         }
-                        
-                        grid[successorNode.y][successorNode.x] = playerO; 
-                        // update grid in a successor
-                        successorNode.grid = grid;
-                        
                         var n = minimax(successorNode, true);
                         if (n.value < bestValue) {
                             bestValue = n.value;
@@ -330,11 +341,18 @@
             // returns an array of possible successors
             function getSuccessors(node) {
                 var successors = [];
+                // reverse the player - successor player should be different from a parent player
+                var player = (node.player === playerO) ? playerX : playerO;
                 
                 for (var y = 0; y < 3; y++) {
                     for (var x = 0; x < 3; x++) {
                         if (node.grid[y][x] === 0) { // if space is not taken by either x or o
-                            successors.push({value: 0, x: x, y: y, grid: node.grid});
+                            // copy grid from a parent 
+                            var grid = jQuery.extend(true, {}, node.grid);
+                            // mark that this player visited the cell
+                            grid[y][x] = player; 
+                            // player should be different from a parent
+                            successors.push({player: player, value: 0, x: x, y: y, grid: grid});
                         }
                     }
                 }
@@ -350,6 +368,7 @@
         <div>
             
             <div id="message"></div>
+            <div id="resultMessage"></div>
             <table>
                 <tr>
                     <td id='00'></td>
@@ -367,6 +386,10 @@
                     <td id='22'></td>
                 </tr>
             </table>
+            <br>
+            <a href="#" onclick="reset()">Reset</a>
+            <br>
+            <input type="checkbox" id="showMessage">Show Message
         </div>
     </body>
 </html>
