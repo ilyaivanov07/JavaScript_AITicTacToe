@@ -222,7 +222,8 @@
                     
                     // computOr's turn. Computer plays as O
                     nodesExpanded = 0;
-                    var recommendedMove  = minimax({player: currentPlayer, value: 0, x: parseInt(this.id.substring(1,2)), y: parseInt(this.id.substring(0,1)), 
+                    // going in as player X because that was the last move by human
+                    var recommendedMove  = minimax({player: playerX, value: 0, x: parseInt(this.id.substring(1,2)), y: parseInt(this.id.substring(0,1)), 
                         grid: tttGrid.grid}, false);
                     $('#message').html('Nodes expanded: ' + nodesExpanded);
                     
