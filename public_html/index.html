@@ -20,24 +20,20 @@
         </style>
         
         <script>
-
             $(function () {
                 $('td').on('click', onCellClick);
             });
-
             var playerX = "X";
             var playerO = "O";
             var currentPlayer = playerX; // human makes the first move as X, computer plays as O
-
             function switchPlayer() {
                 currentPlayer = (currentPlayer === playerX) ? playerO : playerX;
             }
-
+			
             // returns who wins or null if no winner
             function checkWinner(grid) {
                 var xCounter = 0;
                 var oCounter = 0;
-
                 // check each column
                 for (var x = 0; x < 3; x++) {
                     oCounter = 0;
@@ -57,7 +53,6 @@
                         return playerO;
                     }
                 }
-
                 // check each row
                 for (var y = 0; y < 3; y++) {
                     oCounter = 0;
@@ -77,7 +72,6 @@
                         return playerO;
                     }
                 }
-
                 //check diagonals
                 oCounter = 0;
                 xCounter = 0;
@@ -95,7 +89,6 @@
                 if (oCounter === 3) {
                     return playerO;
                 }
-
                 oCounter = 0;
                 xCounter = 0;
                 for (var y = 2, x = 0; x < 3; y--, x++) {
@@ -112,20 +105,19 @@
                 if (oCounter === 3) {
                     return playerO;
                 }
-
                 return null;
             }
-
-
+			
+			
             // done as Immediately Invoked Function Expression (IIFE) to hide private members 
             (function () {
                 // create public object and expose a method that returns an instance 
                 window.$TTTGrid = { create: function () { return new TTTGrid(); } }; // anonymous object 
+
                 // constructor
                 function TTTGrid() {
                     this.grid = []; // store coordinates
-                    // grid[y][x]
-                    // cells can contain X, O, or 0 for none
+                    // cells can contain X, O, or zero for none
                     // initialize grid to all zeroes
                     for (var i = 0; i < 3; i++) {
                         this.grid[i] = [0, 0, 0];
@@ -135,27 +127,22 @@
                     this.countZeroesInGrid = countZerosInGrid;
                 }
 
-
                 function markState(x, y, state) {
                     this.grid[y][x] = state;
-                    //this.displayGrid();
                 }
 
                 function countZerosInGrid() {
                     var counter = 0;
-
                     for (var y = 0; y < 3; y++) {
                         for (var x = 0; x < 3; x++) {
                             if (this.grid[y][x] === 0) counter++;
                         }
                     }
-
                     return counter;
                 }
-
+				
                 function displayGrid(grid) {
                     var g = (grid === undefined) ? this.grid : grid;
-
                     for (var y = 0; y < 3; y++) {
                         document.write('<br>');
                         for (var x = 0; x < 3; x++) {
@@ -163,14 +150,13 @@
                         }
                     }
                 }
-            } ());
-
-
+            } ()); // end of IIFE
+			
+			
             var tttGrid = window.$TTTGrid.create();
             var gameOver = 0;
             var nodesExpanded = 0;
-            //tttGrid.displayGrid();
-            //alert(Math.min.apply(Math, [3, 1, 5]));
+            
             function reset() {
                 tttGrid = window.$TTTGrid.create();
                 gameOver = 0;
@@ -182,10 +168,10 @@
                 }
                 $('#message').html('New Game');
                 $('#resultMessage').html('');
-                currentPlayer = playerX; // human makes the first move as X, computer plays as O
+                currentPlayer = playerX; // human makes the first move as x, computer plays as o
             }
-
-
+			
+			
             function checkResult() {
                 var result = checkWinner(tttGrid.grid);
                 if (result != null) {
@@ -200,28 +186,36 @@
                 }
                 return false;
             }
-
-
+			
+			
             function onCellClick() {
-
                 if (gameOver === 1) return;
-                //alert($(this).text());
-
+				
                 if ($(this).text() === '') {
-                    $(this).html(currentPlayer);
+
+					$(this).html(currentPlayer);
+
                     tttGrid.markState(this.id.substring(1, 2), this.id.substring(0, 1), currentPlayer);
+
                     if (checkResult()) return;
+
                     switchPlayer();
-
-                    // computOr's turn. Computer plays as O
+                    
+					// computOr's turn. Computer plays as o
                     nodesExpanded = 0;
+					
                     // going in as player X because that was the last move by human
-                    var recommendedMove = minimax({ player: playerX, value: null, x: parseInt(this.id.substring(1, 2)), y: parseInt(this.id.substring(0, 1)),
-                        grid: tttGrid.grid
-                    }, true);
-                    $('#message').html('Nodes expanded: ' + nodesExpanded);
-
-                    if ($('#' + recommendedMove.y + recommendedMove.x).text() === '') {
+                    var recommendedMove = minimax({ player: playerX, 
+												value: null, 
+												x: parseInt(this.id.substring(1, 2)), 
+												y: parseInt(this.id.substring(0, 1)),
+												grid: tttGrid.grid
+												}, 
+												true);
+                    
+					$('#message').html('Nodes expanded: ' + nodesExpanded);
+                    
+					if ($('#' + recommendedMove.y + recommendedMove.x).text() === '') {
                         $('#' + recommendedMove.y + recommendedMove.x).html(currentPlayer);
                         tttGrid.markState(recommendedMove.x, recommendedMove.y, currentPlayer);
                         if (checkResult()) return;
@@ -231,11 +225,10 @@
                         alert('Violation: cell(x,y) (' + recommendedMove.x + ',' + recommendedMove.y + ') is occupied');
                     }
                 }
-                //alert(this.id);
             }
-
-
-            // node {type: X|O, value: <1|-1|0>, x: <x>, y: <y>, grid: TTTGrid }
+			
+			
+            // node: {player: X|O, value: <1|-1|0>, x: <x>, y: <y>, grid: TTTGrid }
             function minimax(node, maximizing) {
                 nodesExpanded++;
                 // just in case
@@ -244,6 +237,7 @@
                     alert('nodesExpanded >= 300000');
                     return null;
                 }
+				
                 // if terminal state (win or draw), return node
                 // first check if anyone won
                 var result = checkWinner(node.grid);
@@ -258,19 +252,23 @@
                     else {
                         alert('say what???');
                     }
-
                     return node;
                 }
-                var successors = getSuccessors(node);
+                
+                // switch the player - successor player should be different from a parent player
+                var player = (node.player === playerO) ? playerX : playerO;
+				var successors = getSuccessors(node, player);
+				
                 // then check if the grid is filled
                 if (successors.length === 0) {
                     node.value = 0; // draw
                     return node;
                 }
-
+				
+				
                 var bestValue = 0;
                 var bestNode = node;
-
+				
                 if (maximizing) { // computer is maximizing
                     bestValue = -2;
                     // go through each successor, each successor should be minimizing
@@ -295,7 +293,6 @@
                         }
                     }
                 }
-
                 if (node.value === null) { // initial node, need to select the best node
                     return bestNode;
                 }
@@ -304,16 +301,15 @@
                     return node;
                 }                
             }
-
+			
+			
             // returns an array of possible successors
-            function getSuccessors(node) {
+            function getSuccessors(node, player) {
                 var successors = [];
-                // switch the player - successor player should be different from a parent player
-                var player = (node.player === playerO) ? playerX : playerO;
 
                 for (var y = 0; y < 3; y++) {
                     for (var x = 0; x < 3; x++) {
-                        if (node.grid[y][x] === 0) { // if space is not taken by either x or o
+                        if (node.grid[y][x] === 0) { // if cell is not taken by either x or o (not visited)
                             // copy grid from a parent 
                             var grid = jQuery.extend(true, {}, node.grid);
                             // mark that this player visited the cell
@@ -322,7 +318,6 @@
                         }
                     }
                 }
-
                 return successors;
             }
     
@@ -354,8 +349,7 @@
             </table>
             <br>
             <a href="#" onclick="reset()">Reset</a>
-            <br>
-            <input type="checkbox" id="showMessage">Show Message
-        </div>
+
+		</div>
     </body>
 </html>
